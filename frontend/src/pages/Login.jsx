@@ -1,133 +1,35 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, MapPin } from 'lucide-react';
+import { Mail, Lock, ArrowRight, MapPin, Bell, QrCode, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Button from '../components/ui/Button';
-import Input  from '../components/ui/Input';
 
-/* ── Logo animado compartido ─────────────────────────────────────────────── */
-function BrandHeader() {
-  return (
-    <div
-      className="relative flex flex-col items-center justify-center overflow-hidden"
-      style={{
-        background: 'linear-gradient(145deg,#FFE4D9 0%,#FFD0BF 40%,#FFBBA8 70%,#FFD4C5 100%)',
-        minHeight: '38vh',
-      }}
-    >
-      {/* Círculos de fondo flotantes */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div style={{
-          position:'absolute', top:'-10%', right:'-8%',
-          width:'180px', height:'180px', borderRadius:'50%',
-          background:'rgba(249,123,98,0.18)',
-          animation:'float 7s ease-in-out infinite',
-        }} />
-        <div style={{
-          position:'absolute', bottom:'5%', left:'-10%',
-          width:'130px', height:'130px', borderRadius:'50%',
-          background:'rgba(0,196,180,0.14)',
-          animation:'floatSlow 5s ease-in-out infinite 1.5s',
-        }} />
-        <div style={{
-          position:'absolute', top:'30%', left:'8%',
-          width:'60px', height:'60px', borderRadius:'50%',
-          background:'rgba(255,255,255,0.25)',
-          animation:'floatSlow 6s ease-in-out infinite 0.5s',
-        }} />
-        <div style={{
-          position:'absolute', bottom:'20%', right:'10%',
-          width:'40px', height:'40px', borderRadius:'50%',
-          background:'rgba(249,123,98,0.20)',
-          animation:'float 4s ease-in-out infinite 2s',
-        }} />
-      </div>
+const FEATURES = [
+  { icon: MapPin,  label: 'Mapa en vivo',      color: '#00C4B4' },
+  { icon: Bell,    label: 'Alertas al instante', color: '#F97B62' },
+  { icon: QrCode,  label: 'QR por mascota',     color: '#9B87E8' },
+];
 
-      {/* Logo + texto centrado */}
-      <div className="relative z-10 flex flex-col items-center gap-4">
-
-        {/* Ícono de marca */}
-        <motion.div
-          initial={{ scale: 0, rotate: -15 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
-          className="relative"
-        >
-          <div
-            className="h-[5.5rem] w-[5.5rem] rounded-[1.6rem] flex items-center justify-center text-4xl select-none"
-            style={{
-              background: 'linear-gradient(135deg,#FF9280,#F97B62)',
-              boxShadow: '0 12px 36px rgba(249,123,98,0.50), 0 0 0 6px rgba(249,123,98,0.15)',
-              animation: 'glow 3s ease-in-out infinite',
-            }}
-          >
-            🐾
-          </div>
-          {/* Badge de ubicación */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.4 }}
-            className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg,#26D6CD,#00C4B4)',
-              boxShadow: '0 4px 12px rgba(0,196,180,0.55)',
-            }}
-          >
-            <MapPin size={14} color="white" strokeWidth={2.5} />
-          </motion.div>
-        </motion.div>
-
-        {/* Wordmark HuellaSegura */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.32,0.72,0,1], delay: 0.2 }}
-          className="text-center"
-        >
-          <h1
-            className="font-poppins font-extrabold leading-none select-none"
-            style={{ fontSize: '2.2rem', letterSpacing: '-0.02em' }}
-          >
-            <span style={{ color: '#1A1A2E' }}>Huella</span>
-            <span style={{
-              color: '#F97B62',
-              textShadow: '0 2px 16px rgba(249,123,98,0.35)',
-            }}>Segura</span>
-          </h1>
-          <p className="text-xs font-semibold mt-1 tracking-widest uppercase"
-             style={{ color: 'rgba(26,26,46,0.45)' }}>
-            Pasto · Nariño
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Fade hacia la card blanca */}
-      <div
-        className="absolute bottom-0 inset-x-0 h-16 pointer-events-none"
-        style={{ background: 'linear-gradient(to top,white,transparent)' }}
-      />
-    </div>
-  );
+function FloatingOrb({ style }) {
+  return <div className="absolute rounded-full pointer-events-none" style={style} />;
 }
 
-/* ── Página Login ─────────────────────────────────────────────────────────── */
 export default function Login() {
   const { login }  = useAuth();
   const navigate   = useNavigate();
   const location   = useLocation();
 
-  const [form,     setForm]     = useState({ email: '', password: '' });
-  const [errors,   setErrors]   = useState({});
-  const [apiError, setApiError] = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [form,       setForm]       = useState({ email: '', password: '' });
+  const [errors,     setErrors]     = useState({});
+  const [apiError,   setApiError]   = useState('');
+  const [loading,    setLoading]    = useState(false);
+  const [showPass,   setShowPass]   = useState(false);
 
   const destino = location.state?.from?.pathname || '/';
 
   function handleChange(e) {
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
-    setErrors((p) => ({ ...p, [e.target.name]: '' }));
+    setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+    setErrors(p => ({ ...p, [e.target.name]: '' }));
     setApiError('');
   }
 
@@ -147,94 +49,261 @@ export default function Login() {
       await login(form.email, form.password);
       navigate(destino, { replace: true });
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Error al iniciar sesión. Intenta de nuevo.');
+      setApiError(err.response?.data?.message || 'Correo o contraseña incorrectos.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="relative flex flex-col min-h-screen overflow-hidden"
-         style={{ background: '#FFD0BF' }}>
+    <div className="relative min-h-screen flex flex-col overflow-hidden"
+         style={{ background: 'linear-gradient(160deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%)' }}>
 
-      <BrandHeader />
+      {/* ── Orbs de fondo ──────────────────────────────────────────── */}
+      <FloatingOrb style={{
+        top: '-80px', right: '-60px', width: '280px', height: '280px',
+        background: 'radial-gradient(circle,rgba(249,123,98,0.25) 0%,transparent 70%)',
+        animation: 'float 8s ease-in-out infinite',
+      }} />
+      <FloatingOrb style={{
+        bottom: '15%', left: '-80px', width: '240px', height: '240px',
+        background: 'radial-gradient(circle,rgba(0,196,180,0.18) 0%,transparent 70%)',
+        animation: 'floatSlow 6s ease-in-out infinite 2s',
+      }} />
+      <FloatingOrb style={{
+        top: '40%', right: '-40px', width: '160px', height: '160px',
+        background: 'radial-gradient(circle,rgba(155,135,232,0.15) 0%,transparent 70%)',
+        animation: 'float 10s ease-in-out infinite 1s',
+      }} />
 
-      {/* Card formulario */}
+      {/* ── Sección superior — Brand ───────────────────────────────── */}
+      <div className="relative z-10 flex flex-col items-center pt-14 pb-6 px-6">
+
+        {/* Logo */}
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.1 }}
+          className="relative mb-5"
+        >
+          <div className="h-24 w-24 rounded-[2rem] flex items-center justify-center text-5xl select-none"
+               style={{
+                 background: 'linear-gradient(135deg,#FF9280,#F97B62)',
+                 boxShadow: '0 16px 48px rgba(249,123,98,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
+               }}>
+            🐾
+          </div>
+          <motion.div
+            initial={{ scale: 0 }} animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.4 }}
+            className="absolute -bottom-2 -right-2 h-9 w-9 rounded-full flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg,#26D6CD,#00C4B4)',
+              boxShadow: '0 4px 14px rgba(0,196,180,0.6)',
+            }}>
+            <MapPin size={15} color="white" strokeWidth={2.5} />
+          </motion.div>
+        </motion.div>
+
+        {/* Wordmark */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          className="text-center mb-6"
+        >
+          <h1 className="font-poppins font-extrabold leading-none select-none"
+              style={{ fontSize: '2.4rem', letterSpacing: '-0.03em' }}>
+            <span style={{ color: 'white' }}>Huella</span>
+            <span style={{
+              background: 'linear-gradient(90deg,#F97B62,#FF9280)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            }}>Segura</span>
+          </h1>
+          <p className="text-xs font-semibold mt-1.5 tracking-[0.2em] uppercase"
+             style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Pasto · Nariño · Colombia
+          </p>
+        </motion.div>
+
+        {/* Feature chips */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.4 }}
+          className="flex gap-2 flex-wrap justify-center"
+        >
+          {FEATURES.map(({ icon: Icon, label, color }) => (
+            <div key={label}
+                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                 style={{
+                   background: `${color}18`,
+                   border: `1px solid ${color}35`,
+                   color: color,
+                 }}>
+              <Icon size={11} strokeWidth={2.5} />
+              {label}
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* ── Formulario ─────────────────────────────────────────────── */}
       <motion.div
-        initial={{ y: 60, opacity: 0 }}
-        animate={{ y: 0,  opacity: 1 }}
-        transition={{ duration: 0.45, ease: [0.32,0.72,0,1] }}
-        className="flex-1 rounded-t-[2rem] -mt-10 relative z-10 px-6 pt-8 pb-10 flex flex-col gap-6"
-        style={{ background: 'white', boxShadow: '0 -8px 40px rgba(0,0,0,0.08)' }}
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1], delay: 0.2 }}
+        className="relative z-10 mx-4 mb-6 rounded-3xl overflow-hidden flex-1"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+        }}
       >
-        <div>
-          <h2 className="text-[1.75rem] font-poppins font-bold leading-tight" style={{ color: '#1A1A2E' }}>
-            Bienvenido 👋
-          </h2>
-          <p className="text-sm mt-1" style={{ color: '#6B7280' }}>
-            Ingresa para continuar cuidando a Pasto.
-          </p>
-        </div>
+        <div className="px-6 pt-7 pb-8 flex flex-col gap-5">
 
-        <AnimatePresence>
-          {apiError && (
-            <motion.div role="alert"
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="rounded-2xl px-4 py-3 text-sm font-medium"
-              style={{ background: '#FFF0EE', border: '1px solid #FECACA', color: '#EF4444' }}>
-              {apiError}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-          <Input
-            label="Correo electrónico" id="email" name="email" type="email"
-            placeholder="juan.ortiz@gmail.com"
-            value={form.email} onChange={handleChange} error={errors.email}
-            iconLeft={<Mail size={17} />} autoComplete="email" required
-          />
-          <Input
-            label="Contraseña" id="password" name="password" type="password"
-            placeholder="••••••••"
-            value={form.password} onChange={handleChange} error={errors.password}
-            autoComplete="current-password" required
-          />
-
-          <div className="flex justify-end -mt-1">
-            <span className="text-sm font-semibold cursor-pointer hover:underline"
-                  style={{ color: '#F97B62' }}>
-              ¿Olvidaste la clave?
-            </span>
+          <div>
+            <h2 className="font-poppins font-bold text-2xl text-white">Bienvenido de nuevo</h2>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              Ingresa para continuar cuidando a Pasto.
+            </p>
           </div>
 
-          <Button type="submit" variant="primary" size="lg" fullWidth loading={loading}
-                  className="shadow-warm-lg">
-            Iniciar sesión
-          </Button>
-        </form>
+          {/* Error API */}
+          <AnimatePresence>
+            {apiError && (
+              <motion.div role="alert"
+                initial={{ opacity: 0, y: -8, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2"
+                style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#FCA5A5' }}>
+                ⚠️ {apiError}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div className="flex flex-col items-center gap-4">
-          <Link to="/"
-            className="text-sm underline underline-offset-2 hover:opacity-70 transition-opacity"
-            style={{ color: '#9CA3AF' }}>
-            Continuar como invitado
-          </Link>
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 
-          <div className="flex items-center gap-3 w-full">
-            <div className="flex-1 h-px" style={{ background: '#EDE5E1' }} />
-            <span className="text-xs" style={{ color: '#9CA3AF' }}>o continúa con</span>
-            <div className="flex-1 h-px" style={{ background: '#EDE5E1' }} />
+            {/* Campo email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold tracking-wide uppercase"
+                     style={{ color: 'rgba(255,255,255,0.5)' }}>
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: errors.email ? '#F87171' : 'rgba(255,255,255,0.35)' }} />
+                <input
+                  id="email" name="email" type="email"
+                  placeholder="juan.ortiz@gmail.com"
+                  value={form.email} onChange={handleChange}
+                  autoComplete="email"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm text-white outline-none transition-all"
+                  style={{
+                    background: errors.email ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.08)',
+                    border: errors.email ? '1.5px solid rgba(248,113,113,0.6)' : '1.5px solid rgba(255,255,255,0.12)',
+                  }}
+                  onFocus={e => { e.target.style.border = '1.5px solid rgba(249,123,98,0.7)'; e.target.style.background = 'rgba(249,123,98,0.08)'; }}
+                  onBlur={e => { e.target.style.border = errors.email ? '1.5px solid rgba(248,113,113,0.6)' : '1.5px solid rgba(255,255,255,0.12)'; e.target.style.background = errors.email ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.08)'; }}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-xs pl-1" style={{ color: '#F87171' }}>{errors.email}</p>
+              )}
+            </div>
+
+            {/* Campo contraseña */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold tracking-wide uppercase"
+                       style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  Contraseña
+                </label>
+                <span className="text-xs font-semibold cursor-pointer"
+                      style={{ color: '#F97B62' }}>
+                  ¿Olvidaste la clave?
+                </span>
+              </div>
+              <div className="relative">
+                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: errors.password ? '#F87171' : 'rgba(255,255,255,0.35)' }} />
+                <input
+                  id="password" name="password"
+                  type={showPass ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={form.password} onChange={handleChange}
+                  autoComplete="current-password"
+                  className="w-full pl-11 pr-12 py-3.5 rounded-2xl text-sm text-white outline-none transition-all"
+                  style={{
+                    background: errors.password ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.08)',
+                    border: errors.password ? '1.5px solid rgba(248,113,113,0.6)' : '1.5px solid rgba(255,255,255,0.12)',
+                  }}
+                  onFocus={e => { e.target.style.border = '1.5px solid rgba(249,123,98,0.7)'; e.target.style.background = 'rgba(249,123,98,0.08)'; }}
+                  onBlur={e => { e.target.style.border = errors.password ? '1.5px solid rgba(248,113,113,0.6)' : '1.5px solid rgba(255,255,255,0.12)'; e.target.style.background = errors.password ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.08)'; }}
+                />
+                <button type="button" onClick={() => setShowPass(p => !p)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2"
+                        style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-xs pl-1" style={{ color: '#F87171' }}>{errors.password}</p>
+              )}
+            </div>
+
+            {/* Botón submit */}
+            <motion.button
+              type="submit"
+              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+              className="w-full py-4 rounded-2xl font-poppins font-bold text-base text-white flex items-center justify-center gap-2 mt-1"
+              style={{
+                background: loading
+                  ? 'rgba(249,123,98,0.5)'
+                  : 'linear-gradient(135deg,#F97B62,#FF5C3A)',
+                boxShadow: loading ? 'none' : '0 8px 28px rgba(249,123,98,0.45)',
+              }}
+            >
+              {loading ? (
+                <div className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              ) : (
+                <>Iniciar sesión <ArrowRight size={18} strokeWidth={2.5} /></>
+              )}
+            </motion.button>
+          </form>
+
+          {/* Separador */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>o</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.1)' }} />
           </div>
 
-          <p className="text-sm" style={{ color: '#9CA3AF' }}>
-            ¿No tienes cuenta?{' '}
-            <Link to="/register" style={{ color: '#F97B62' }} className="font-semibold hover:underline">
-              Regístrate
+          {/* Links */}
+          <div className="flex flex-col items-center gap-3">
+            <Link to="/"
+              className="text-sm font-medium transition-opacity hover:opacity-70"
+              style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Continuar como invitado
             </Link>
-          </p>
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              ¿No tienes cuenta?{' '}
+              <Link to="/register" className="font-bold hover:underline" style={{ color: '#F97B62' }}>
+                Regístrate gratis
+              </Link>
+            </p>
+          </div>
         </div>
       </motion.div>
+
+      {/* Footer */}
+      <motion.p
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+        className="relative z-10 text-center text-[11px] pb-6"
+        style={{ color: 'rgba(255,255,255,0.2)' }}>
+        HuellaSegura · Pasto, Nariño · v1.0
+      </motion.p>
     </div>
   );
 }
