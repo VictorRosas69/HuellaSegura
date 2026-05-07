@@ -1,0 +1,60 @@
+const { validationResult } = require('express-validator');
+const { Avistamiento, Mascota, Reporte, Notificacion, Usuario } = require('../models');
+const { uploadBuffer } = require('../config/cloudinary');
+
+async function crear(req, res, next) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { mascota_id, latitud, longitud, descripcion, nombre_testigo, email_testigo } = req.body;
+
+    const mascota = await Mascota.findByPk(mascota_id, {
+      include: [{ model: Usuario, as: 'propietario', attributes: ['id', 'nombre', 'email'] }],
+    });
+    if (!mascota) {
+      return res.status(404).json({ success: false, message: 'Mascota no encontrada.' });
+    }
+
+    const reporteActivo = await Reporte.findOne({
+      where: { mascota_id, estado: 'en_busqueda' },
+    });
+
+    let foto_url = null;
+    if (req.file) {
+      const resultado = await uploadBuffer(req.file.buffer, { folder: 'huella-segura/avistamientos' });
+      foto_url = resultado.secure_url;
+    }
+
+    const avistamiento = await Avistamiento.create({
+      mascota_id,
+      reporte_id: reporteActivo?.id || null,
+      latitud,
+      longitud,
+      descripcion: descripcion || null,
+      foto_url,
+      nombre_testigo: nombre_testigo || null,
+      email_testigo: email_testigo || null,
+    });
+
+    // Notificar al propietario
+    await Notificacion.create({
+      usuario_id: mascota.propietario.id,
+      reporte_id: reporteActivo?.id || null,
+      mensaje: `¡Alguien vio a ${mascota.nombre}! Se registró un avistamiento cerca de lat:${parseFloat(latitud).toFixed(4)}, lng:${parseFloat(longitud).toFixed(4)}.`,
+      tipo: 'avistamiento',
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Avistamiento registrado. El propietario fue notificado.',
+      avistamiento: { id: avistamiento.id },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { crear };
