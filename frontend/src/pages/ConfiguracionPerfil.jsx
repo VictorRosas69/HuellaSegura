@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, MoreHorizontal, CheckCircle, Bell,
-  MapPin, Moon, LogOut, Plus, ChevronRight, QrCode, Pencil, LayoutDashboard,
+  MapPin, Moon, LogOut, Plus, ChevronRight, QrCode, Pencil, LayoutDashboard, Camera,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { useTokens } from '../hooks/useTokens';
 import { useThemeContext } from '../providers/ThemeProvider';
+import api from '../services/api';
 import * as notificacionService from '../services/notificacionService';
 import * as mascotaService      from '../services/mascotaService';
 import BottomNav from '../components/ui/BottomNav';
@@ -117,10 +118,12 @@ function MascotaProfileCard({ mascota, isDark, navigate }) {
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function ConfiguracionPerfil() {
-  const { usuario, logout } = useAuth();
+  const { usuario, logout, actualizarUsuario } = useAuth();
   const navigate = useNavigate();
   const t = useTokens();
   const { isDark, toggleTheme } = useThemeContext();
+  const fotoInputRef = useRef(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
 
   const [radioAlerta,  setRadioAlerta]  = useState(usuario?.radio_alerta || 5);
   const [notifActiva,  setNotifActiva]  = useState(true);
@@ -147,6 +150,30 @@ export default function ConfiguracionPerfil() {
       toast.error(err.response?.data?.message || 'No se pudo actualizar el radio.');
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function handleFotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('La imagen no puede superar 5 MB.');
+      return;
+    }
+    setSubiendoFoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('foto', file);
+      const { data } = await api.put('/usuarios/foto', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      actualizarUsuario({ foto_url: data.foto_url });
+      toast.success('Foto de perfil actualizada.');
+    } catch {
+      toast.error('No se pudo actualizar la foto. Intenta de nuevo.');
+    } finally {
+      setSubiendoFoto(false);
+      e.target.value = '';
     }
   }
 
@@ -177,23 +204,42 @@ export default function ConfiguracionPerfil() {
 
       {/* ── Hero avatar ──────────────────────────────────────────────────── */}
       <div className="flex flex-col items-center pt-5 pb-6 px-5">
+        {/* Input oculto para seleccionar imagen */}
+        <input
+          ref={fotoInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png"
+          className="hidden"
+          onChange={handleFotoChange}
+        />
         {/* Avatar con glow */}
         <div className="relative mb-3">
           <motion.div
             whileTap={{ scale: 0.95 }}
-            className="h-24 w-24 rounded-full flex items-center justify-center text-3xl font-poppins font-bold text-white"
+            onClick={() => fotoInputRef.current?.click()}
+            className="h-24 w-24 rounded-full overflow-hidden flex items-center justify-center text-3xl font-poppins font-bold text-white cursor-pointer"
             style={{
-              background: 'linear-gradient(135deg,#FF9280,#F97B62)',
+              background: usuario?.foto_url ? 'transparent' : 'linear-gradient(135deg,#FF9280,#F97B62)',
               boxShadow: '0 8px 32px rgba(249,123,98,0.40), 0 0 0 5px rgba(249,123,98,0.12)',
             }}
           >
-            {initials}
+            {usuario?.foto_url
+              ? <img src={usuario.foto_url} alt="Foto de perfil" className="w-full h-full object-cover" />
+              : initials
+            }
           </motion.div>
           {/* Badge cámara */}
-          <button className="absolute bottom-0 right-0 h-7 w-7 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(255,255,255,0.1)' }}>
-            <Pencil size={12} style={{ color: textMuted }} />
-          </button>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => fotoInputRef.current?.click()}
+            disabled={subiendoFoto}
+            className="absolute bottom-0 right-0 h-8 w-8 rounded-full flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg,#FF9280,#F97B62)', boxShadow: '0 2px 8px rgba(249,123,98,0.5)' }}>
+            {subiendoFoto
+              ? <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              : <Camera size={13} color="white" />
+            }
+          </motion.button>
         </div>
 
         <h2 className="text-xl font-poppins font-bold mb-0.5" style={{ color: textPrimary }}>

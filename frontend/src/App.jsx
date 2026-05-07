@@ -12,6 +12,7 @@ import Login                from './pages/Login';
 import Register             from './pages/Register';
 import PerfilPublico        from './pages/PerfilPublico';
 import ReportarAvistamiento from './pages/ReportarAvistamiento';
+import OlvideContrasena     from './pages/OlvideContrasena';
 
 // Páginas protegidas
 import Home                from './pages/Home';
@@ -45,8 +46,9 @@ function AnimatedRoutes() {
           <Route path="/splash"               element={<Splash />} />
           <Route path="/login"                element={<Login />} />
           <Route path="/register"             element={<Register />} />
-          <Route path="/publico/mascotas/:id" element={<PerfilPublico />} />
+          <Route path="/publico/mascotas/:id"  element={<PerfilPublico />} />
           <Route path="/avistamientos/nuevo"  element={<ReportarAvistamiento />} />
+          <Route path="/olvide-contrasena"    element={<OlvideContrasena />} />
 
           {/* ── Protegidas — usuarios ────────────────────────────── */}
           <Route element={<ProtectedRoute />}>

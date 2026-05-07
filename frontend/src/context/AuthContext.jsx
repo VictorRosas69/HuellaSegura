@@ -79,6 +79,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const actualizarUsuario = useCallback((cambios) => {
+    setUsuario(prev => {
+      const actualizado = { ...prev, ...cambios };
+      localStorage.setItem('usuario', JSON.stringify(actualizado));
+      return actualizado;
+    });
+  }, []);
+
   const value = {
     usuario,
     cargando,
@@ -87,6 +95,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    actualizarUsuario,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

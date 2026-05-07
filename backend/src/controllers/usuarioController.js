@@ -1,4 +1,5 @@
 const { body, validationResult } = require('express-validator');
+const { uploadBuffer } = require('../config/cloudinary');
 
 async function actualizarRadioAlerta(req, res, next) {
   try {
@@ -28,4 +29,29 @@ async function actualizarUbicacion(req, res, next) {
   } catch (error) { next(error); }
 }
 
-module.exports = { actualizarRadioAlerta, actualizarUbicacion };
+async function actualizarFoto(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No se recibió ninguna imagen.' });
+    }
+
+    const resultado = await uploadBuffer(req.file.buffer, {
+      folder: 'huella-segura/perfiles',
+      public_id: `perfil_${req.usuario.id}`,
+      overwrite: true,
+      transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }],
+    });
+
+    await req.usuario.update({ foto_url: resultado.secure_url });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Foto de perfil actualizada.',
+      foto_url: resultado.secure_url,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { actualizarRadioAlerta, actualizarUbicacion, actualizarFoto };

@@ -30,4 +30,29 @@ router.post('/logout', authenticate, authController.logout);
 // GET /api/auth/me  (requiere token válido)
 router.get('/me', authenticate, authController.me);
 
+// POST /api/auth/forgot-password
+router.post('/forgot-password',
+  [body('email').isEmail().normalizeEmail().withMessage('Ingresa un correo válido.')],
+  authController.forgotPassword
+);
+
+// POST /api/auth/verify-reset-code
+router.post('/verify-reset-code',
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Correo inválido.'),
+    body('codigo').isLength({ min: 6, max: 6 }).withMessage('El código debe tener 6 dígitos.'),
+  ],
+  authController.verifyResetCode
+);
+
+// POST /api/auth/reset-password
+router.post('/reset-password',
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Correo inválido.'),
+    body('codigo').isLength({ min: 6, max: 6 }).withMessage('Código inválido.'),
+    body('nuevaPassword').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+  ],
+  authController.resetPassword
+);
+
 module.exports = router;

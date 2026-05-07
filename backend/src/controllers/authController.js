@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
+const crypto = require('crypto');
 const { Usuario } = require('../models');
 const { sign } = require('../config/jwt');
+const { enviarCorreoResetCodigo } = require('../services/emailService');
 
 async function register(req, res, next) {
   try {
@@ -108,4 +110,89 @@ async function me(req, res) {
   });
 }
 
-module.exports = { register, login, logout, me };
+async function forgotPassword(req, res, next) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email } = req.body;
+    const usuario = await Usuario.findOne({ where: { email } });
+
+    // Respuesta genérica para no revelar si el correo existe
+    if (!usuario) {
+      return res.status(200).json({
+        success: true,
+        message: 'Si ese correo está registrado, recibirás un código en breve.',
+      });
+    }
+
+    const codigo = String(crypto.randomInt(100000, 999999));
+    const expira = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+
+    await usuario.update({ reset_code: codigo, reset_code_expires: expira });
+
+    enviarCorreoResetCodigo({ email: usuario.email, nombre: usuario.nombre, codigo }).catch(console.error);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Si ese correo está registrado, recibirás un código en breve.',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function verifyResetCode(req, res, next) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email, codigo } = req.body;
+    const usuario = await Usuario.findOne({ where: { email } });
+
+    if (!usuario || usuario.reset_code !== codigo) {
+      return res.status(400).json({ success: false, message: 'Código inválido.' });
+    }
+
+    if (new Date() > new Date(usuario.reset_code_expires)) {
+      return res.status(400).json({ success: false, message: 'El código ha expirado. Solicita uno nuevo.' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Código verificado correctamente.' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resetPassword(req, res, next) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email, codigo, nuevaPassword } = req.body;
+    const usuario = await Usuario.findOne({ where: { email } });
+
+    if (!usuario || usuario.reset_code !== codigo) {
+      return res.status(400).json({ success: false, message: 'Código inválido.' });
+    }
+
+    if (new Date() > new Date(usuario.reset_code_expires)) {
+      return res.status(400).json({ success: false, message: 'El código ha expirado. Solicita uno nuevo.' });
+    }
+
+    // El hook beforeUpdate de Sequelize hashea la contraseña automáticamente
+    await usuario.update({ password: nuevaPassword, reset_code: null, reset_code_expires: null });
+
+    return res.status(200).json({ success: true, message: 'Contraseña restablecida exitosamente.' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { register, login, logout, me, forgotPassword, verifyResetCode, resetPassword };

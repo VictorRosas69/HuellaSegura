@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowRight, MapPin, Bell, QrCode, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -219,10 +219,11 @@ export default function Login() {
                        style={{ color: 'rgba(255,255,255,0.5)' }}>
                   Contraseña
                 </label>
-                <span className="text-xs font-semibold cursor-pointer"
+                <Link to="/olvide-contrasena"
+                      className="text-xs font-semibold hover:underline"
                       style={{ color: '#F97B62' }}>
                   ¿Olvidaste la clave?
-                </span>
+                </Link>
               </div>
               <div className="relative">
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"

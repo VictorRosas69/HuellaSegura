@@ -73,4 +73,32 @@ async function enviarCorreoAvistamiento({ propietario, mascota, avistamiento }) 
   return info;
 }
 
-module.exports = { enviarCorreoReporteCreado, enviarCorreoAvistamiento };
+async function enviarCorreoResetCodigo({ email, nombre, codigo }) {
+  const transporte = crearTransporte();
+  return transporte.sendMail({
+    from: `"HuellaSegura" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: `🔐 Tu código de verificación — HuellaSegura`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#0F0F1A;border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#FF9280,#F97B62);padding:32px;text-align:center;">
+          <div style="font-size:48px;margin-bottom:8px;">🐾</div>
+          <h1 style="color:white;margin:0;font-size:24px;font-weight:800;">HuellaSegura</h1>
+        </div>
+        <div style="padding:32px;">
+          <p style="color:rgba(255,255,255,0.7);margin-top:0;">Hola <strong style="color:white;">${nombre}</strong>,</p>
+          <p style="color:rgba(255,255,255,0.7);">Recibiste este correo porque solicitaste restablecer tu contraseña.</p>
+          <p style="color:rgba(255,255,255,0.7);">Tu código de verificación es:</p>
+          <div style="background:rgba(249,123,98,0.15);border:2px solid rgba(249,123,98,0.4);border-radius:12px;padding:24px;text-align:center;margin:24px 0;">
+            <span style="font-size:40px;font-weight:900;letter-spacing:12px;color:#F97B62;">${codigo}</span>
+          </div>
+          <p style="color:rgba(255,255,255,0.5);font-size:13px;">⏱ Este código expira en <strong style="color:rgba(255,255,255,0.7);">15 minutos</strong>.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:13px;">Si no solicitaste este cambio, ignora este correo. Tu contraseña permanece sin cambios.</p>
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:24px 0;" />
+          <p style="color:rgba(255,255,255,0.3);font-size:11px;text-align:center;">HuellaSegura · Pasto, Nariño</p>
+        </div>
+      </div>`,
+  });
+}
+
+module.exports = { enviarCorreoReporteCreado, enviarCorreoAvistamiento, enviarCorreoResetCodigo };

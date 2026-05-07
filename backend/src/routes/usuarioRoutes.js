@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { body } = require('express-validator');
 const usuarioController = require('../controllers/usuarioController');
 const { authenticate } = require('../middlewares/authMiddleware');
+const upload = require('../middlewares/uploadMiddleware');
 
 const router = Router();
 router.use(authenticate);
@@ -20,5 +21,8 @@ router.put(
   ],
   usuarioController.actualizarUbicacion
 );
+
+// PUT /api/usuarios/foto
+router.put('/foto', upload.single('foto'), usuarioController.actualizarFoto);
 
 module.exports = router;

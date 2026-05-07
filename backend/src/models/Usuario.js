@@ -58,6 +58,18 @@ const Usuario = sequelize.define(
       type: DataTypes.DECIMAL(11, 8),
       allowNull: true,
     },
+    reset_code: {
+      type: DataTypes.STRING(6),
+      allowNull: true,
+    },
+    reset_code_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    foto_url: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
   },
   {
     tableName: 'usuarios',
@@ -89,6 +101,7 @@ Usuario.prototype.toPublicJSON = function () {
     rol: this.rol,
     radio_alerta: this.radio_alerta,
     activo: this.activo,
+    foto_url: this.foto_url || null,
     created_at: this.created_at,
   };
 };
