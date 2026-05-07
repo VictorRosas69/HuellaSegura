@@ -99,13 +99,13 @@ function MascotaProfileCard({ mascota, isDark, navigate }) {
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/mascotas/${mascota.id}/editar`); }}
             className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-[11px] font-semibold transition-all"
-            style={{ background: isDark ? '#252540' : '#FFF8F5', color: '#F97B62', border: '1.5px solid #EDE5E1' }}>
+            style={{ background: 'rgba(249,123,98,0.1)', color: '#F97B62', border: '1.5px solid rgba(249,123,98,0.2)' }}>
             <Pencil size={11} /> Editar
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/mascotas/${mascota.id}/carnet`); }}
             className="h-7 w-7 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: '#E0F9F7' }}>
+            style={{ background: 'rgba(0,196,180,0.15)', border: '1px solid rgba(0,196,180,0.2)' }}>
             <QrCode size={13} style={{ color: '#00C4B4' }} />
           </button>
         </div>
@@ -153,11 +153,11 @@ export default function ConfiguracionPerfil() {
 
   const initials = usuario?.nombre?.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() || '?';
 
-  const bg          = isDark ? '#1A1A2E' : '#FFF8F5';
-  const surface     = isDark ? '#1E1E30' : '#FFFFFF';
-  const textPrimary = isDark ? '#F1F0FF' : '#1A1A2E';
-  const textMuted   = '#9CA3AF';
-  const divider     = isDark ? '#323250' : '#EDE5E1';
+  const bg          = '#0F0F1A';
+  const surface     = 'rgba(255,255,255,0.05)';
+  const textPrimary = '#FFFFFF';
+  const textMuted   = 'rgba(255,255,255,0.4)';
+  const divider     = 'rgba(255,255,255,0.08)';
 
   return (
     <div className="min-h-screen pb-24 transition-colors" style={{ background: bg }}>
@@ -166,13 +166,13 @@ export default function ConfiguracionPerfil() {
       <div className="flex items-center justify-between px-5 pt-safe pt-4 pb-2">
         <motion.button whileTap={{ scale: 0.88 }} onClick={() => navigate(-1)}
           className="h-9 w-9 rounded-2xl flex items-center justify-center"
-          style={{ background: isDark ? 'rgba(241,240,255,0.1)' : 'rgba(249,123,98,0.12)' }}>
-          <ChevronLeft size={20} style={{ color: isDark ? '#F1F0FF' : '#F97B62' }} strokeWidth={2.5} />
+          style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <ChevronLeft size={20} style={{ color: '#F97B62' }} strokeWidth={2.5} />
         </motion.button>
         <h1 className="font-poppins font-bold text-lg" style={{ color: textPrimary }}>Mi perfil</h1>
         <button className="h-9 w-9 rounded-2xl flex items-center justify-center"
-          style={{ background: isDark ? 'rgba(241,240,255,0.1)' : 'rgba(249,123,98,0.12)' }}>
-          <MoreHorizontal size={20} style={{ color: isDark ? '#F1F0FF' : '#F97B62' }} />
+          style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <MoreHorizontal size={20} style={{ color: '#F97B62' }} />
         </button>
       </div>
 
@@ -192,7 +192,7 @@ export default function ConfiguracionPerfil() {
           </motion.div>
           {/* Badge cámara */}
           <button className="absolute bottom-0 right-0 h-7 w-7 rounded-full flex items-center justify-center"
-            style={{ background: isDark ? '#323250' : '#EDE5E1' }}>
+            style={{ background: 'rgba(255,255,255,0.1)' }}>
             <Pencil size={12} style={{ color: textMuted }} />
           </button>
         </div>

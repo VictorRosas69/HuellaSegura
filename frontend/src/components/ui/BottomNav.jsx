@@ -17,16 +17,16 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-mobile z-40 pb-safe"
       style={{
-        background: 'rgba(255,255,255,0.88)',
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        borderTop: '1px solid rgba(237,229,225,0.8)',
-        boxShadow: '0 -4px 30px rgba(249,123,98,0.08)',
+        background: 'rgba(15,15,26,0.85)',
+        backdropFilter: 'blur(28px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+        borderTop: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
       }}
       aria-label="Navegación principal"
     >
       <div className="flex items-center h-16">
-        {NAV_ITEMS.map((item, idx) => {
+        {NAV_ITEMS.map((item) => {
           if (item.fab) {
             return (
               <div key="fab" className="flex-1 flex justify-center">
@@ -38,7 +38,7 @@ export default function BottomNav() {
                   className="h-14 w-14 -mt-6 rounded-full flex items-center justify-center text-white relative"
                   style={{
                     background: 'linear-gradient(135deg,#FF9280,#F97B62)',
-                    boxShadow: '0 8px 24px rgba(249,123,98,0.55), 0 0 0 4px rgba(249,123,98,0.15)',
+                    boxShadow: '0 8px 28px rgba(249,123,98,0.6), 0 0 0 4px rgba(249,123,98,0.15)',
                     animation: 'glow 2.5s ease-in-out infinite',
                   }}
                   aria-label="Crear nuevo reporte"
@@ -55,39 +55,37 @@ export default function BottomNav() {
               key={item.to}
               to={item.to}
               end={item.to === '/'}
-              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2"
               aria-label={item.label}
             >
               {({ isActive }) => (
-                <div className="flex flex-col items-center gap-0.5">
+                <>
                   <motion.div
-                    animate={{ scale: isActive ? 1.1 : 1 }}
+                    animate={{ scale: isActive ? 1.12 : 1, y: isActive ? -1 : 0 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     className="relative"
                   >
-                    <Icon
-                      size={22}
-                      strokeWidth={isActive ? 2.2 : 1.8}
-                      className={isActive ? 'text-primary' : 'text-dark-300 dark:text-dark-400'}
-                    />
+                    {isActive ? (
+                      <div className="h-9 w-9 rounded-2xl flex items-center justify-center"
+                           style={{ background: 'rgba(249,123,98,0.18)' }}>
+                        <Icon size={20} strokeWidth={2.2} style={{ color: '#F97B62' }} />
+                      </div>
+                    ) : (
+                      <Icon size={20} strokeWidth={1.8} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                    )}
                     {item.to === '/alertas' && (
                       <span
                         id="nav-badge-alertas"
-                        className="absolute -top-1 -right-1 hidden h-2.5 w-2.5
-                                   rounded-full bg-danger border-2 border-white dark:border-dark-800"
+                        className="absolute -top-0.5 -right-0.5 hidden h-2.5 w-2.5 rounded-full border-2"
+                        style={{ background: '#F97B62', borderColor: '#0F0F1A' }}
                       />
                     )}
                   </motion.div>
-                  <span className={`text-[10px] font-semibold transition-colors duration-200 ${isActive ? 'text-primary' : 'text-dark-300 dark:text-dark-400'}`}>
+                  <span className="text-[10px] font-semibold transition-colors duration-200"
+                        style={{ color: isActive ? '#F97B62' : 'rgba(255,255,255,0.35)' }}>
                     {item.label}
                   </span>
-                  {/* Indicador activo */}
-                  <motion.div
-                    animate={{ width: isActive ? 20 : 0, opacity: isActive ? 1 : 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    style={{ height: 3, borderRadius: 99, background: '#F97B62' }}
-                  />
-                </div>
+                </>
               )}
             </NavLink>
           );
