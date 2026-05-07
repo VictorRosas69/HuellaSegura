@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, MoreHorizontal, CheckCircle, Bell,
-  MapPin, Moon, LogOut, Plus, ChevronRight, QrCode, Pencil,
+  MapPin, Moon, LogOut, Plus, ChevronRight, QrCode, Pencil, LayoutDashboard,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
@@ -418,6 +418,23 @@ export default function ConfiguracionPerfil() {
           </div>
         </div>
       </div>
+
+      {/* ── Panel de administrador (solo visible para admin) ─────────────── */}
+      {usuario?.rol === 'admin' && (
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={() => navigate('/admin')}
+          className="mx-4 w-[calc(100%-2rem)] py-4 rounded-3xl text-sm font-semibold flex items-center justify-center gap-2 mb-3"
+          style={{
+            background: 'linear-gradient(135deg,#6366F1,#8B5CF6)',
+            color: 'white',
+            boxShadow: '0 6px 20px rgba(99,102,241,0.35)',
+          }}
+        >
+          <LayoutDashboard size={16} />
+          Panel de administrador
+        </motion.button>
+      )}
 
       {/* ── Cerrar sesión ────────────────────────────────────────────────── */}
       <motion.button
