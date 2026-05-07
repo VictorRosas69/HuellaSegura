@@ -13,10 +13,10 @@ function Orb({ style }) {
 function StepIndicator({ step }) {
   const steps = ['Correo', 'Código', 'Nueva clave'];
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex items-center justify-center gap-1 mb-7">
       {steps.map((label, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <div className="flex flex-col items-center gap-1">
+        <div key={i} className="flex items-center gap-1">
+          <div className="flex flex-col items-center gap-2">
             <motion.div
               animate={{
                 background: i < step
@@ -24,20 +24,28 @@ function StepIndicator({ step }) {
                   : i === step
                     ? 'linear-gradient(135deg,#FF9280,#F97B62)'
                     : 'rgba(255,255,255,0.1)',
-                scale: i === step ? 1.1 : 1,
+                scale: i === step ? 1.08 : 1,
+                boxShadow: i === step
+                  ? '0 6px 20px rgba(249,123,98,0.45)'
+                  : i < step
+                    ? '0 6px 20px rgba(52,211,153,0.35)'
+                    : 'none',
               }}
-              className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              className="h-12 w-12 rounded-full flex items-center justify-center font-poppins font-extrabold text-white"
+              style={{ fontSize: '1.1rem' }}
             >
-              {i < step ? <CheckCircle size={14} /> : i + 1}
+              {i < step ? <CheckCircle size={20} strokeWidth={2.5} /> : i + 1}
             </motion.div>
-            <span className="text-[9px] font-semibold"
+            <span className="text-[11px] font-bold text-center"
                   style={{ color: i === step ? '#F97B62' : i < step ? '#34D399' : 'rgba(255,255,255,0.3)' }}>
               {label}
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className="h-px w-8 mb-4 rounded-full"
-                 style={{ background: i < step ? '#34D399' : 'rgba(255,255,255,0.1)' }} />
+            <motion.div
+              className="h-px w-10 mb-7 rounded-full"
+              animate={{ background: i < step ? '#34D399' : 'rgba(255,255,255,0.12)' }}
+            />
           )}
         </div>
       ))}
