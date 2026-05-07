@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Map, Plus, Bell, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTokens } from '../../hooks/useTokens';
 
 const NAV_ITEMS = [
   { to: '/',        icon: Home,  label: 'Inicio'  },
@@ -12,16 +13,17 @@ const NAV_ITEMS = [
 
 export default function BottomNav() {
   const navigate = useNavigate();
+  const t        = useTokens();
 
   return (
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-mobile z-40 pb-safe"
       style={{
-        background: 'rgba(15,15,26,0.85)',
+        background: t.navBg,
         backdropFilter: 'blur(28px) saturate(180%)',
         WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
+        borderTop: `1px solid ${t.navBorder}`,
+        boxShadow: t.isDark ? '0 -8px 32px rgba(0,0,0,0.4)' : '0 -4px 24px rgba(249,123,98,0.08)',
       }}
       aria-label="Navegación principal"
     >
@@ -67,22 +69,22 @@ export default function BottomNav() {
                   >
                     {isActive ? (
                       <div className="h-9 w-9 rounded-2xl flex items-center justify-center"
-                           style={{ background: 'rgba(249,123,98,0.18)' }}>
-                        <Icon size={20} strokeWidth={2.2} style={{ color: '#F97B62' }} />
+                           style={{ background: t.primaryBg }}>
+                        <Icon size={20} strokeWidth={2.2} style={{ color: t.primary }} />
                       </div>
                     ) : (
-                      <Icon size={20} strokeWidth={1.8} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                      <Icon size={20} strokeWidth={1.8} style={{ color: t.textMuted }} />
                     )}
                     {item.to === '/alertas' && (
                       <span
                         id="nav-badge-alertas"
                         className="absolute -top-0.5 -right-0.5 hidden h-2.5 w-2.5 rounded-full border-2"
-                        style={{ background: '#F97B62', borderColor: '#0F0F1A' }}
+                        style={{ background: t.primary, borderColor: t.bg }}
                       />
                     )}
                   </motion.div>
                   <span className="text-[10px] font-semibold transition-colors duration-200"
-                        style={{ color: isActive ? '#F97B62' : 'rgba(255,255,255,0.35)' }}>
+                        style={{ color: isActive ? t.primary : t.textMuted }}>
                     {item.label}
                   </span>
                 </>

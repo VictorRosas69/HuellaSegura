@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
-import { ThemeContext } from '../providers/ThemeProvider';
+import { useTokens } from '../hooks/useTokens';
+import { useThemeContext } from '../providers/ThemeProvider';
 import * as notificacionService from '../services/notificacionService';
 import * as mascotaService      from '../services/mascotaService';
 import BottomNav from '../components/ui/BottomNav';
@@ -118,10 +119,8 @@ function MascotaProfileCard({ mascota, isDark, navigate }) {
 export default function ConfiguracionPerfil() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
-
-  const themeCtx    = useContext(ThemeContext);
-  const isDark      = themeCtx?.isDark      ?? false;
-  const toggleTheme = themeCtx?.toggleTheme ?? (() => {});
+  const t = useTokens();
+  const { isDark, toggleTheme } = useThemeContext();
 
   const [radioAlerta,  setRadioAlerta]  = useState(usuario?.radio_alerta || 5);
   const [notifActiva,  setNotifActiva]  = useState(true);
@@ -153,11 +152,11 @@ export default function ConfiguracionPerfil() {
 
   const initials = usuario?.nombre?.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() || '?';
 
-  const bg          = '#0F0F1A';
-  const surface     = 'rgba(255,255,255,0.05)';
-  const textPrimary = '#FFFFFF';
-  const textMuted   = 'rgba(255,255,255,0.4)';
-  const divider     = 'rgba(255,255,255,0.08)';
+  const bg          = t.bg;
+  const surface     = t.surface;
+  const textPrimary = t.text;
+  const textMuted   = t.textMuted;
+  const divider     = t.border;
 
   return (
     <div className="min-h-screen pb-24 transition-colors" style={{ background: bg }}>
