@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowRight, MapPin, Bell, QrCode, Eye, EyeOff } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { useAuth } from '../context/AuthContext';
 
 const FEATURES = [
@@ -19,11 +20,14 @@ export default function Login() {
   const navigate   = useNavigate();
   const location   = useLocation();
 
-  const [form,       setForm]       = useState({ email: '', password: '' });
-  const [errors,     setErrors]     = useState({});
-  const [apiError,   setApiError]   = useState('');
-  const [loading,    setLoading]    = useState(false);
-  const [showPass,   setShowPass]   = useState(false);
+  const [form,            setForm]            = useState({ email: '', password: '' });
+  const [errors,          setErrors]          = useState({});
+  const [apiError,        setApiError]        = useState('');
+  const [loading,         setLoading]         = useState(false);
+  const [showPass,        setShowPass]        = useState(false);
+  const [turnstileToken,  setTurnstileToken]  = useState('');
+  const [turnstileOk,     setTurnstileOk]     = useState(false);
+  const turnstileRef = useRef(null);
 
   const destino = location.state?.from?.pathname || '/';
 
@@ -44,12 +48,20 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
+    if (!turnstileOk) {
+      setApiError('Completa la verificación de seguridad.');
+      return;
+    }
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      await login(form.email, form.password, turnstileToken);
       navigate(destino, { replace: true });
     } catch (err) {
       setApiError(err.response?.data?.message || 'Correo o contraseña incorrectos.');
+      // Resetear Turnstile para que el usuario pueda volver a intentarlo
+      turnstileRef.current?.reset();
+      setTurnstileToken('');
+      setTurnstileOk(false);
     } finally {
       setLoading(false);
     }
@@ -253,17 +265,29 @@ export default function Login() {
               )}
             </div>
 
+            {/* Cloudflare Turnstile */}
+            <div className="flex justify-center">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                onSuccess={(token) => { setTurnstileToken(token); setTurnstileOk(true); }}
+                onExpire={() => { setTurnstileToken(''); setTurnstileOk(false); }}
+                onError={() => { setTurnstileToken(''); setTurnstileOk(false); }}
+                options={{ theme: 'dark', language: 'es' }}
+              />
+            </div>
+
             {/* Botón submit */}
             <motion.button
               type="submit"
               whileTap={{ scale: 0.98 }}
-              disabled={loading}
+              disabled={loading || !turnstileOk}
               className="w-full py-4 rounded-2xl font-poppins font-bold text-base text-white flex items-center justify-center gap-2 mt-1"
               style={{
-                background: loading
-                  ? 'rgba(249,123,98,0.5)'
+                background: loading || !turnstileOk
+                  ? 'rgba(249,123,98,0.45)'
                   : 'linear-gradient(135deg,#F97B62,#FF5C3A)',
-                boxShadow: loading ? 'none' : '0 8px 28px rgba(249,123,98,0.45)',
+                boxShadow: loading || !turnstileOk ? 'none' : '0 8px 28px rgba(249,123,98,0.45)',
               }}
             >
               {loading ? (

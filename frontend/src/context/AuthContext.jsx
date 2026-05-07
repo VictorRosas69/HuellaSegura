@@ -25,27 +25,8 @@ export function AuthProvider({ children }) {
     setCargando(false);
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    // ── Credenciales de demo (sin backend) ──────────────────────────────
-    const DEMO_USERS = [
-      {
-        email: 'juan@huellasegura.co', password: 'vecino123',
-        usuario: { id: 1, nombre: 'Juan Ortiz', email: 'juan@huellasegura.co', rol: 'usuario', radio_alerta: 3 },
-      },
-      {
-        email: 'admin@huellasegura.co', password: 'admin123',
-        usuario: { id: 2, nombre: 'Admin HuellaSegura', email: 'admin@huellasegura.co', rol: 'admin', radio_alerta: 10 },
-      },
-    ];
-    const demo = DEMO_USERS.find(u => u.email === email && u.password === password);
-    if (demo) {
-      localStorage.setItem('token', 'demo-token-' + demo.usuario.id);
-      localStorage.setItem('usuario', JSON.stringify(demo.usuario));
-      setUsuario(demo.usuario);
-      return { token: 'demo', usuario: demo.usuario };
-    }
-    // ── Flujo real con backend ───────────────────────────────────────────
-    const { data } = await authService.login(email, password);
+  const login = useCallback(async (email, password, turnstileToken = '') => {
+    const { data } = await authService.login(email, password, turnstileToken);
     localStorage.setItem('token', data.token);
     localStorage.setItem('usuario', JSON.stringify(data.usuario));
     setUsuario(data.usuario);

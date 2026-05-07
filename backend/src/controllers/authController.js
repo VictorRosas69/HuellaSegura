@@ -4,6 +4,19 @@ const { Usuario } = require('../models');
 const { sign } = require('../config/jwt');
 const { enviarCorreoResetCodigo } = require('../services/emailService');
 
+async function verificarTurnstile(token) {
+  const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: process.env.TURNSTILE_SECRET_KEY,
+      response: token,
+    }),
+  });
+  const data = await resp.json();
+  return data.success === true;
+}
+
 async function register(req, res, next) {
   try {
     const errors = validationResult(req);
@@ -47,7 +60,20 @@ async function login(req, res, next) {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { email, password, turnstileToken } = req.body;
+
+    // Verificar Turnstile solo si la clave está configurada
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      const tokenValido = turnstileToken
+        ? await verificarTurnstile(turnstileToken)
+        : false;
+      if (!tokenValido) {
+        return res.status(400).json({
+          success: false,
+          message: 'Verificación de seguridad fallida. Por favor intenta de nuevo.',
+        });
+      }
+    }
 
     const usuario = await Usuario.findOne({ where: { email } });
     if (!usuario) {
