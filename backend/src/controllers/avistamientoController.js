@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const { Avistamiento, Mascota, Reporte, Notificacion, Usuario } = require('../models');
 const { uploadBuffer } = require('../config/cloudinary');
+const { enviarCorreoAvistamiento } = require('../services/emailService');
 
 async function crear(req, res, next) {
   try {
@@ -39,13 +40,20 @@ async function crear(req, res, next) {
       email_testigo: email_testigo || null,
     });
 
-    // Notificar al propietario
+    // Notificación in-app al propietario
     await Notificacion.create({
       usuario_id: mascota.propietario.id,
       reporte_id: reporteActivo?.id || null,
       mensaje: `¡Alguien vio a ${mascota.nombre}! Se registró un avistamiento cerca de lat:${parseFloat(latitud).toFixed(4)}, lng:${parseFloat(longitud).toFixed(4)}.`,
       tipo: 'avistamiento',
     });
+
+    // Correo al propietario (no bloquea la respuesta)
+    enviarCorreoAvistamiento({
+      propietario: { email: mascota.propietario.email, nombre: mascota.propietario.nombre },
+      mascota: { nombre: mascota.nombre },
+      avistamiento: { latitud, longitud, descripcion, nombre_testigo, foto_url },
+    }).catch(console.error);
 
     return res.status(201).json({
       success: true,
