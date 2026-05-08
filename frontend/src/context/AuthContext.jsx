@@ -18,9 +18,6 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
       }
-    } else {
-      // ── BYPASS TEMPORAL SCREENSHOTS ── retirar antes de producción
-      setUsuario({ id: 1, nombre: 'Demo HuellaSegura', email: 'demo@huellasegura.co', rol: 'admin', radio_alerta: 5 });
     }
     setCargando(false);
   }, []);
@@ -34,18 +31,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const register = useCallback(async (nombre, email, password) => {
-    // ── Registro demo (sin backend) ─────────────────────────────────────
-    const usuarioNuevo = { id: Date.now(), nombre, email, rol: 'usuario', radio_alerta: 5 };
-    localStorage.setItem('token', 'demo-token-new');
-    localStorage.setItem('usuario', JSON.stringify(usuarioNuevo));
-    setUsuario(usuarioNuevo);
-    return { token: 'demo', usuario: usuarioNuevo };
-    // ── Flujo real (descomentar cuando el backend esté activo) ───────────
-    // const { data } = await authService.register(nombre, email, password);
-    // localStorage.setItem('token', data.token);
-    // localStorage.setItem('usuario', JSON.stringify(data.usuario));
-    // setUsuario(data.usuario);
-    // return data;
+    const { data } = await authService.register(nombre, email, password);
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('usuario', JSON.stringify(data.usuario));
+    setUsuario(data.usuario);
+    return data;
   }, []);
 
   const logout = useCallback(async () => {
