@@ -2,16 +2,18 @@ const { verify } = require('../config/jwt');
 const { Usuario } = require('../models');
 
 async function authenticate(req, res, next) {
+  // Soportar token en header (normal) o query param (EventSource/SSE)
   const authHeader = req.headers.authorization;
+  const tokenQuery = req.query.token;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader && !tokenQuery) {
     return res.status(401).json({
       success: false,
       message: 'Acceso denegado. Se requiere autenticación.',
     });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = tokenQuery || authHeader?.split(' ')[1];
 
   try {
     const payload = verify(token);

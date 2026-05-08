@@ -6,6 +6,7 @@ const notificacionRoutes = require('./notificacionRoutes');
 const usuarioRoutes      = require('./usuarioRoutes');
 const avistamientoRoutes = require('./avistamientoRoutes');
 const perfilPublicoRoutes= require('./perfilPublicoRoutes');
+const { router: sseRouter } = require('./sseRoutes');
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/avistamientos', avistamientoRoutes);   // Sprint 6
 router.use('/publico',          perfilPublicoRoutes);   // Sprint 6
 router.use('/admin',            require('./adminRoutes'));          // Sprint 7
 router.use('/entidades-aliadas', require('./entidadAliadaRoutes')); // Sprint 7
+router.use('/sse',              sseRouter);                         // Tiempo real
 
 module.exports = router;

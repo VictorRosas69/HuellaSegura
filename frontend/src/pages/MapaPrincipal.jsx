@@ -148,6 +148,12 @@ export default function MapaPrincipal() {
   const filtrados = reportes.filter(r => {
     if (filtroEsp !== 'todos' && r.mascota?.especie !== filtroEsp) return false;
     if (!dentroDeRango(r.created_at, filtroTmp)) return false;
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase();
+      const nombre = (r.mascota?.nombre || '').toLowerCase();
+      const raza   = (r.mascota?.raza   || '').toLowerCase();
+      if (!nombre.includes(q) && !raza.includes(q)) return false;
+    }
     return true;
   });
 
@@ -219,10 +225,16 @@ export default function MapaPrincipal() {
             <input
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
-              placeholder="Buscar barrio en Pasto…"
+              placeholder="Buscar mascota o barrio…"
               className="flex-1 bg-transparent outline-none text-sm"
               style={{ color: '#1A1A2E' }}
             />
+            {busqueda.trim() && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                    style={{ background: '#FFF0EA', color: '#F97B62' }}>
+                {filtrados.length}
+              </span>
+            )}
           </div>
 
           {/* Botón filtros — CON onClick */}
