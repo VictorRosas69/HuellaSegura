@@ -30,9 +30,9 @@ export default function Login() {
   const [turnstileError,  setTurnstileError]  = useState(false);
   const turnstileRef = useRef(null);
 
-  // En desarrollo local, Turnstile puede fallar por CSP — se permite igual
   const isDev = import.meta.env.DEV;
-  const puedeEnviar = isDev ? true : (turnstileOk || turnstileError);
+  // Puede enviar si: pasó Turnstile, o si hubo error de carga (graceful fallback)
+  const puedeEnviar = turnstileOk || turnstileError;
 
   const destino = location.state?.from?.pathname || '/';
 
@@ -53,7 +53,7 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
-    if (!isDev && !turnstileOk && !turnstileError) {
+    if (!turnstileOk && !turnstileError) {
       setApiError('Completa la verificación de seguridad.');
       return;
     }
@@ -270,19 +270,22 @@ export default function Login() {
               )}
             </div>
 
-            {/* Cloudflare Turnstile — solo en producción */}
-            {!isDev && (
-              <div className="flex justify-center">
-                <Turnstile
-                  ref={turnstileRef}
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                  onSuccess={(token) => { setTurnstileToken(token); setTurnstileOk(true); setTurnstileError(false); }}
-                  onExpire={() => { setTurnstileToken(''); setTurnstileOk(false); }}
-                  onError={() => { setTurnstileError(true); }}
-                  options={{ theme: 'dark', language: 'es' }}
-                />
-              </div>
-            )}
+            {/* Cloudflare Turnstile */}
+            <div className="flex flex-col items-center gap-1">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                onSuccess={(token) => { setTurnstileToken(token); setTurnstileOk(true); setTurnstileError(false); }}
+                onExpire={() => { setTurnstileToken(''); setTurnstileOk(false); }}
+                onError={() => { setTurnstileError(true); }}
+                options={{ theme: 'dark', language: 'es', size: 'normal' }}
+              />
+              {turnstileError && (
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                  Verificación no disponible — continúa normalmente
+                </p>
+              )}
+            </div>
 
             {/* Botón submit */}
             <motion.button
