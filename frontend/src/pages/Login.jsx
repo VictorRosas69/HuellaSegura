@@ -27,7 +27,12 @@ export default function Login() {
   const [showPass,        setShowPass]        = useState(false);
   const [turnstileToken,  setTurnstileToken]  = useState('');
   const [turnstileOk,     setTurnstileOk]     = useState(false);
+  const [turnstileError,  setTurnstileError]  = useState(false);
   const turnstileRef = useRef(null);
+
+  // En desarrollo local, Turnstile puede fallar por CSP — se permite igual
+  const isDev = import.meta.env.DEV;
+  const puedeEnviar = isDev ? true : (turnstileOk || turnstileError);
 
   const destino = location.state?.from?.pathname || '/';
 
@@ -48,7 +53,7 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
-    if (!turnstileOk) {
+    if (!isDev && !turnstileOk && !turnstileError) {
       setApiError('Completa la verificación de seguridad.');
       return;
     }
@@ -265,29 +270,31 @@ export default function Login() {
               )}
             </div>
 
-            {/* Cloudflare Turnstile */}
-            <div className="flex justify-center">
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-                onSuccess={(token) => { setTurnstileToken(token); setTurnstileOk(true); }}
-                onExpire={() => { setTurnstileToken(''); setTurnstileOk(false); }}
-                onError={() => { setTurnstileToken(''); setTurnstileOk(false); }}
-                options={{ theme: 'dark', language: 'es' }}
-              />
-            </div>
+            {/* Cloudflare Turnstile — solo en producción */}
+            {!isDev && (
+              <div className="flex justify-center">
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => { setTurnstileToken(token); setTurnstileOk(true); setTurnstileError(false); }}
+                  onExpire={() => { setTurnstileToken(''); setTurnstileOk(false); }}
+                  onError={() => { setTurnstileError(true); }}
+                  options={{ theme: 'dark', language: 'es' }}
+                />
+              </div>
+            )}
 
             {/* Botón submit */}
             <motion.button
               type="submit"
               whileTap={{ scale: 0.98 }}
-              disabled={loading || !turnstileOk}
+              disabled={loading || !puedeEnviar}
               className="w-full py-4 rounded-2xl font-poppins font-bold text-base text-white flex items-center justify-center gap-2 mt-1"
               style={{
-                background: loading || !turnstileOk
+                background: loading || !puedeEnviar
                   ? 'rgba(249,123,98,0.45)'
                   : 'linear-gradient(135deg,#F97B62,#FF5C3A)',
-                boxShadow: loading || !turnstileOk ? 'none' : '0 8px 28px rgba(249,123,98,0.45)',
+                boxShadow: loading || !puedeEnviar ? 'none' : '0 8px 28px rgba(249,123,98,0.45)',
               }}
             >
               {loading ? (

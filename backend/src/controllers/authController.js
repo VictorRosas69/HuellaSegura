@@ -62,8 +62,8 @@ async function login(req, res, next) {
 
     const { email, password, turnstileToken } = req.body;
 
-    // Verificar Turnstile solo si la clave está configurada
-    if (process.env.TURNSTILE_SECRET_KEY) {
+    // Verificar Turnstile solo en producción
+    if (process.env.NODE_ENV === 'production' && process.env.TURNSTILE_SECRET_KEY) {
       const tokenValido = turnstileToken
         ? await verificarTurnstile(turnstileToken)
         : false;
