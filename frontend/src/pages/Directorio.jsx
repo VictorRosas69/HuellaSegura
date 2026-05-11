@@ -14,12 +14,6 @@ const GRADIENTS = [
   'linear-gradient(135deg,#60A5FA,#3B82F6)',
 ];
 
-const MOCK_VETS = [
-  { id:1, nombre:'Medimax Veterinaria', tipo:'veterinaria', distancia:'0.6 km', rating:4.9, tags:['24 HORAS','ALIADA'],    gradIdx:0, telefono:'3157891234' },
-  { id:2, nombre:'Centro Animal Pasto', tipo:'veterinaria', distancia:'1.1 km', rating:4.7, tags:['URGENCIAS'],             gradIdx:1, telefono:'3104561234' },
-  { id:3, nombre:'Vet Galeras',         tipo:'veterinaria', distancia:'1.8 km', rating:4.6, tags:['ALIADA'],               gradIdx:2, telefono:'3162341234' },
-  { id:4, nombre:'Casa Patitas',        tipo:'albergue',    distancia:'2.3 km', rating:4.8, tags:['24 HORAS','URGENCIAS'], gradIdx:3, telefono:'3178901234' },
-];
 const FILTROS = [
   { id:'todos',       label:'Todos'        },
   { id:'veterinaria', label:'Veterinarias' },
@@ -36,8 +30,8 @@ export default function Directorio() {
 
   useEffect(() => {
     listarEntidades()
-      .then(({ data }) => { const l = data.entidades||[]; setEntidades(l.length ? l : MOCK_VETS); })
-      .catch(() => setEntidades(MOCK_VETS))
+      .then(({ data }) => setEntidades(data.entidades || []))
+      .catch(() => setEntidades([]))
       .finally(() => setCargando(false));
   }, []);
 

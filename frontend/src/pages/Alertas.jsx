@@ -5,19 +5,13 @@ import { useTokens } from '../hooks/useTokens';
 import BottomNav from '../components/ui/BottomNav';
 import { listarNotificaciones, marcarLeida, marcarTodasLeidas } from '../services/notificacionService';
 
-const MOCK_NOTIFS = [
-  { id:1, tipo:'perdida',      mensaje:'Alguien reportó a Max (Labrador) cerca de Cra 27, La Aurora. ¡Hace 2 horas!',  leida:false, created_at: new Date(Date.now()-7200000).toISOString()  },
-  { id:2, tipo:'avistamiento', mensaje:'Un vecino vio a un gato similar a Luna en el Parque Bolívar. Hace 45 min.',      leida:false, created_at: new Date(Date.now()-2700000).toISOString()  },
-  { id:3, tipo:'perdida',      mensaje:'Nueva mascota perdida en tu zona: Toby, Beagle, collar azul.',                   leida:true,  created_at: new Date(Date.now()-86400000).toISOString() },
-  { id:4, tipo:'avistamiento', mensaje:'Avistamiento confirmado: mascota encontrada cerca de tu dirección.',             leida:true,  created_at: new Date(Date.now()-172800000).toISOString()},
-];
 
 const TABS = [
   { label: 'Todos',        filter: () => true },
-  { label: 'Cercanos',     filter: n => n.tipo === 'perdida' },
+  { label: 'Cercanos',     filter: n => n.tipo === 'proximidad'   },
   { label: 'Mis mascotas', filter: n => n.tipo === 'avistamiento' },
 ];
-const FILTRO_TIPO_OPTS   = ['Todos', 'Pérdida', 'Avistamiento'];
+const FILTRO_TIPO_OPTS   = ['Todos', 'Proximidad', 'Avistamiento'];
 const FILTRO_ESTADO_OPTS = ['Todas', 'No leídas', 'Leídas'];
 
 function tiempoRelativo(isoStr) {
@@ -38,8 +32,8 @@ export default function Alertas() {
 
   useEffect(() => {
     listarNotificaciones()
-      .then(({ data }) => setNotifs(data.notificaciones?.length ? data.notificaciones : MOCK_NOTIFS))
-      .catch(() => setNotifs(MOCK_NOTIFS))
+      .then(({ data }) => setNotifs(data.notificaciones || []))
+      .catch(() => setNotifs([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -48,7 +42,7 @@ export default function Alertas() {
 
   const notifsFiltradas = notifs
     .filter(TABS[tab].filter)
-    .filter(n => filtroTipo==='Pérdida' ? n.tipo==='perdida' : filtroTipo==='Avistamiento' ? n.tipo==='avistamiento' : true)
+    .filter(n => filtroTipo==='Proximidad' ? n.tipo==='proximidad' : filtroTipo==='Avistamiento' ? n.tipo==='avistamiento' : true)
     .filter(n => filtroEstado==='No leídas' ? !n.leida : filtroEstado==='Leídas' ? n.leida : true);
 
   const noLeidas       = notifs.filter(n => !n.leida).length;
